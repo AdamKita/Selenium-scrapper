@@ -18,7 +18,12 @@ driver = webdriver.Chrome(PATH);
 
 def data_to_csv(data,search_term):
     df = pd.DataFrame(data)
-    df.to_csv(r'C:\Users\Adam\Desktop\export_dataframe.csv', index = True, header=True)
+    df.to_csv(r'C:\Users\Adam\Desktop\{0}_dataframe.csv'.format(search_term), index = True, header=True)
+
+def change_location(driver):
+    change_location = driver.find_element_by_xpath('//*[@data-event="ChangeLocation"]')
+    change_location.click()
+
 
 def get_page_data(drive):
         results = driver.find_elements_by_class_name("search-item")
@@ -54,26 +59,30 @@ def next_page(driver):
 
 
 def main():
-    data_list = []
-    search_term = "subaru"
     driver.get("https://www.kijiji.ca/")
-
-    search = driver.find_element_by_id("SearchKeyword")
-    search.send_keys(search_term)
-    search.send_keys(Keys.RETURN)
-    ##wait for page to fully load
+    search_terms = ["skyline", "RX7"]
     try:
-        main = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.ID, "mainPageContent"))
-        )
-        while next_page(driver):
-            temp =  get_page_data(driver)
-            data_list.append(temp)
-        data_to_csv(data_list, search_term)
+        for search_term in search_terms:
+            data_list = []
+            search = driver.find_element_by_id("SearchKeyword")
+            search.clear()
+            search.send_keys(search_term)
+            search.send_keys(Keys.RETURN)
+            change_location(driver)
+
+            ##wait for page to fully load
+            try:
+                main = WebDriverWait(driver, 10).until(
+                    EC.presence_of_element_located((By.ID, "mainPageContent"))
+                )
+                while next_page(driver):
+                    page_data =  get_page_data(driver)
+                    data_list.append(page_data)
+                data_to_csv(data_list, search_term)
+            finally :
+                print("scrap complete for ", search_term)
     finally :
         driver.quit()
-
-
 
 
 if __name__ == "__main__":
