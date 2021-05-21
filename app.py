@@ -16,9 +16,9 @@ import asyncio
 PATH = "C:\Program Files (x86)\chromedriver.exe"
 driver = webdriver.Chrome(PATH);
 
-def data_to_csv(data):
+def data_to_csv(data,search_term):
     df = pd.DataFrame(data)
-    df.to_csv(r'C:\Users\Adam\Desktop\export_dataframe.csv', index = False, header=True)
+    df.to_csv(r'C:\Users\Adam\Desktop\export_dataframe.csv', index = True, header=True)
 
 def get_page_data(drive):
         results = driver.find_elements_by_class_name("search-item")
@@ -47,20 +47,19 @@ def next_page(driver):
             next_button.click();
             return True
         except StaleElementReferenceException:
-            print("end of pages")
             return False
         except NoSuchElementException:
-            print("end of pages")
             return False
 
 
 
 def main():
     data_list = []
+    search_term = "subaru"
     driver.get("https://www.kijiji.ca/")
 
     search = driver.find_element_by_id("SearchKeyword")
-    search.send_keys("subaru")
+    search.send_keys(search_term)
     search.send_keys(Keys.RETURN)
     ##wait for page to fully load
     try:
@@ -70,7 +69,7 @@ def main():
         while next_page(driver):
             temp =  get_page_data(driver)
             data_list.append(temp)
-        data_to_csv(data_list)
+        data_to_csv(data_list, search_term)
     finally :
         driver.quit()
 
